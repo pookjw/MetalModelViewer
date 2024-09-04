@@ -67,7 +67,50 @@
 }
 
 - (MDLVertexDescriptor *)vertexDescriptor {
+    MDLVertexDescriptor *vertexDescriptor = [MDLVertexDescriptor new];
     
+    NSUInteger offset = 0;
+    
+    //
+    
+    MDLVertexAttribute *positionVertexAttribute = [[MDLVertexAttribute alloc] initWithName:MDLVertexAttributePosition format:MDLVertexFormatFloat3 offset:offset bufferIndex:static_cast<NSUInteger>(Layout::VertexBuffer)];
+    vertexDescriptor.attributes[static_cast<NSInteger>(Attribute::Position)] = positionVertexAttribute;
+    [positionVertexAttribute release];
+    
+    offset += sizeof(simd_float3);
+    
+    //
+    
+    MDLVertexAttribute *normalVertexAttribute = [[MDLVertexAttribute alloc] initWithName:MDLVertexAttributeNormal format:MDLVertexFormatFloat3 offset:offset bufferIndex:static_cast<NSUInteger>(Layout::VertexBuffer)];
+    vertexDescriptor.attributes[static_cast<NSInteger>(Attribute::Normal)] = normalVertexAttribute;
+    [normalVertexAttribute release];
+    
+    offset += sizeof(simd_float3);
+    
+    //
+    
+    MDLVertexBufferLayout *vertexBufferLayout = [[MDLVertexBufferLayout alloc] initWithStride:offset];
+    vertexDescriptor.layouts[static_cast<NSInteger>(Layout::VertexBuffer)] = vertexBufferLayout;
+    [vertexBufferLayout release];
+    
+    offset = 0;
+    
+    //
+    
+    // UV는 Texture가 놓일 위치를 말한다.
+    MDLVertexAttribute *uvVertexAttribute = [[MDLVertexAttribute alloc] initWithName:MDLVertexAttributeTextureCoordinate format:MDLVertexFormatFloat2 offset:offset bufferIndex:static_cast<NSUInteger>(Layout::UVBuffer)];
+    vertexDescriptor.attributes[static_cast<NSInteger>(Layout::UVBuffer)] = uvVertexAttribute;
+    [uvVertexAttribute release];
+    
+    offset += sizeof(simd_float2);
+    
+    MDLVertexBufferLayout *uvBufferLayout = [[MDLVertexBufferLayout alloc] initWithStride:offset];
+    vertexDescriptor.layouts[static_cast<NSInteger>(Layout::UVBuffer)] = uvBufferLayout;
+    [uvBufferLayout release];
+    
+    //
+    
+    return [vertexDescriptor autorelease];
 }
 
 @end
