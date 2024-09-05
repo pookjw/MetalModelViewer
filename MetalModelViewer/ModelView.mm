@@ -81,6 +81,7 @@
         //
         
         Model *groundModel = [[Model alloc] initWithType:ModelTypeGround device:device vertexDescriptor:[self vertexDescriptor]];
+        groundModel.tiling = 16;
         
         //
         
@@ -203,7 +204,7 @@
     
     MTLRenderPassColorAttachmentDescriptor *colorAttachmentDescriptor = [MTLRenderPassColorAttachmentDescriptor new];
     colorAttachmentDescriptor.texture = [drawable texture];
-    colorAttachmentDescriptor.clearColor = MTLClearColorMake(0.f, 1.f, 1.f, 1.f);
+    colorAttachmentDescriptor.clearColor = MTLClearColorMake(0.f, 1.f, 0.f, 1.f);
     colorAttachmentDescriptor.loadAction = MTLLoadActionClear;
     colorAttachmentDescriptor.storeAction = MTLStoreActionStore;
     
@@ -225,9 +226,10 @@
     //
     
     _timer += 0.005f;
-//    
+    _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -4.f)));
+//
 //    //
-//    
+//
     _groundModel->_scale = 40.f;
     _groundModel->_rotation.z = MathLibrary::radiansFromDegrees(90.f);
     _groundModel->_rotation.y = std::sin(_timer);

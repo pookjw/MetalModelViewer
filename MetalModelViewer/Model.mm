@@ -18,6 +18,7 @@
 - (instancetype)initWithType:(ModelType)type device:(id<MTLDevice>)device vertexDescriptor:(MDLVertexDescriptor *)vertexDescriptor {
     if (self = [super init]) {
         _scale = 1.f;
+        _tiling = 1;
         
         if (type == ModelTypeGround) {
             MTKMeshBufferAllocator *allocator = [[MTKMeshBufferAllocator alloc] initWithDevice:device];
@@ -37,8 +38,6 @@
             
             _meshes = [[NSArray alloc] initWithObjects:mtkMesh, nil];
             [mtkMesh release];
-            
-            _tiling = 16;
         } else {
             NSString *name;
             switch (type) {
@@ -76,8 +75,6 @@
             NSArray<MTKMesh *> *meshes = [MTKMesh newMeshesFromAsset:asset device:device sourceMeshes:NULL error:&error];
             _meshes = [meshes retain];
             [meshes release];
-            
-            _tiling = 1;
         }
     }
     

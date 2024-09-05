@@ -9,18 +9,18 @@
 #include <numbers>
 
 std::float_t MathLibrary::degreeFromRadians(std::float_t radians) {
-    return radians * 180.f / std::numbers::pi_v<float>;
+    return radians * 180.f / std::numbers::pi_v<std::float_t>;
 }
 
 std::float_t MathLibrary::radiansFromDegrees(std::float_t degrees) {
-    return degrees * std::numbers::pi_v<float> / 180.f;
+    return degrees * std::numbers::pi_v<std::float_t> / 180.f;
 }
 
 simd::float4x4 MathLibrary::float4x4FromFloat3Translation(simd::float3 translation) {
     simd::float4x4 matrix (simd::make_float4(1.f, 0.f, 0.f, 0.f),
                            simd::make_float4(0.f, 1.f, 0.f, 0.f),
                            simd::make_float4(0.f, 0.f, 1.f, 0.f),
-                           simd::make_float4(translation, 1));
+                           simd::make_float4(translation, 1.f));
     
     return matrix;
 }
@@ -100,7 +100,7 @@ simd::float4x4 MathLibrary::projectionFloat4x4(std::float_t fov, std::float_t ne
     simd::float4x4 result (simd::make_float4(x, 0.f, 0.f, 0.f),
                            simd::make_float4(0.f, y, 0.f, 0.f),
                            simd::make_float4(0.f, 0.f, z, lhs ? 1.f : -1.f),
-                           simd::make_float4(0.f, 0.f, z * near * (lhs ? 1.f : -1.f), 0.f));
+                           simd::make_float4(0.f, 0.f, z * near * (lhs ? -1.f : 1.f), 0.f));
     
     return result;
 }
