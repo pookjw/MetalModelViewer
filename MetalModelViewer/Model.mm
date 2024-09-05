@@ -37,6 +37,8 @@
             
             _meshes = [[NSArray alloc] initWithObjects:mtkMesh, nil];
             [mtkMesh release];
+            
+            _tiling = 16;
         } else {
             NSString *name;
             switch (type) {
@@ -74,6 +76,8 @@
             NSArray<MTKMesh *> *meshes = [MTKMesh newMeshesFromAsset:asset device:device sourceMeshes:NULL error:&error];
             _meshes = [meshes retain];
             [meshes release];
+            
+            _tiling = 1;
         }
     }
     
@@ -89,6 +93,7 @@
     uniforms.modelMatrix = [self modelMatrix];
     params.tiling = _tiling;
     
+    [encoder setTriangleFillMode:MTLTriangleFillModeFill];
     [encoder setVertexBytes:&uniforms length:sizeof(Uniforms) atIndex:static_cast<NSUInteger>(BufferIndex::UniformsBuffer)];
     [encoder setFragmentBytes:&params length:sizeof(Params) atIndex:static_cast<NSUInteger>(BufferIndex::ParamsBuffer)];
     

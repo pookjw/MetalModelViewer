@@ -24,6 +24,7 @@
 @property (assign, nonatomic) float timer;
 @property (assign, nonatomic) Uniforms uniforms;
 @property (assign, nonatomic) Params params;
+@property (retain, nonatomic, readonly) UIUpdateLink *updateLink;
 @end
 
 @implementation ModelView
@@ -62,6 +63,7 @@
         renderPipelineDescriptor.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
         renderPipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIOWithError([self vertexDescriptor], &error);
         assert(error == nil);
+//        renderPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
         
         id<MTLRenderPipelineState> renderpipelineState = [device newRenderPipelineStateWithDescriptor:renderPipelineDescriptor error:&error];
         [renderPipelineDescriptor release];
@@ -82,12 +84,21 @@
         
         //
         
+        UIUpdateLink *updateLink = [UIUpdateLink updateLinkForView:self actionTarget:self selector:@selector(didTriggerUpdateLink:)];
+        updateLink.requiresContinuousUpdates = YES;
+        updateLink.wantsLowLatencyEventDispatch = YES;
+        updateLink.preferredFrameRateRange = CAFrameRateRangeMake(0.f, 30.f, 30.f);
+        updateLink.enabled = YES;
+        
+        //
+        
         _device = [device retain];
         _commandQueue = [commandQueue retain];
         _renderPipelineState = [renderpipelineState retain];
         _depthStencilState = [depthStencilState retain];
         _groundModel = [groundModel retain];
         _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -4.f)));
+        _updateLink = [updateLink retain];
         
         [commandQueue release];
         [renderpipelineState release];
@@ -121,7 +132,7 @@
     _params.width = size.width;
     _params.height = size.height;
     
-    [self draw];
+//    [self draw];
 }
 
 - (CAMetalLayer *)metalLayer {
@@ -175,6 +186,10 @@
     return [vertexDescriptor autorelease];
 }
 
+- (void)didTriggerUpdateLink:(UIUpdateLink *)sender {
+    [self draw];
+}
+
 - (void)draw {
     CAMetalLayer *metalLayer = self.metalLayer;
     
@@ -205,14 +220,14 @@
     [renderPassDescriptor release];
     
     [renderCommandEncoder setRenderPipelineState:_renderPipelineState];
-    [renderCommandEncoder setDepthStencilState:_depthStencilState];
+//    [renderCommandEncoder setDepthStencilState:_depthStencilState];
     
     //
     
     _timer += 0.005f;
-    
-    //
-    
+//    
+//    //
+//    
     _groundModel->_scale = 40.f;
     _groundModel->_rotation.z = MathLibrary::radiansFromDegrees(90.f);
     _groundModel->_rotation.y = std::sin(_timer);
