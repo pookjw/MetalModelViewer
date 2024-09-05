@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4F287FAC2C896E450086F9B7 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F287FAB2C896E450086F9B7 /* UniformTypeIdentifiers.framework */; };
 		4FEE1DB32C88996000ABB707 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FEE1DB22C88996000ABB707 /* MetalKit.framework */; };
 		4FEE1DB52C88996500ABB707 /* ModelIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FEE1DB42C88996500ABB707 /* ModelIO.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4F287FAB2C896E450086F9B7 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		4FEE1D8B2C8897C500ABB707 /* MetalModelViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MetalModelViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FEE1DB22C88996000ABB707 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		4FEE1DB42C88996500ABB707 /* ModelIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ModelIO.framework; path = System/Library/Frameworks/ModelIO.framework; sourceTree = SDKROOT; };
@@ -55,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F287FAC2C896E450086F9B7 /* UniformTypeIdentifiers.framework in Frameworks */,
 				4FEE1DB52C88996500ABB707 /* ModelIO.framework in Frameworks */,
 				4FEE1DB32C88996000ABB707 /* MetalKit.framework in Frameworks */,
 			);
@@ -83,6 +86,7 @@
 		4FEE1DB12C88996000ABB707 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4F287FAB2C896E450086F9B7 /* UniformTypeIdentifiers.framework */,
 				4FEE1DB42C88996500ABB707 /* ModelIO.framework */,
 				4FEE1DB22C88996000ABB707 /* MetalKit.framework */,
 			);

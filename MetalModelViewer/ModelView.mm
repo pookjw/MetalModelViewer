@@ -9,6 +9,8 @@
 #import <MetalKit/MetalKit.h>
 #import <ModelIO/ModelIO.h>
 #import "Common.h"
+#include "MathLibrary.hpp"
+#import "Model.h"
 
 // early_fragment_tests 써보기
 
@@ -17,6 +19,11 @@
 @property (retain, nonatomic, readonly) id<MTLDevice> device;
 @property (retain, nonatomic, readonly) id<MTLCommandQueue> commandQueue;
 @property (retain, nonatomic, readonly) id<MTLRenderPipelineState> renderPipelineState;
+@property (retain, nonatomic, readonly) id<MTLDepthStencilState> depthStencilState;
+@property (retain, nonatomic, readonly) Model *groundModel;
+@property (assign, nonatomic) float timer;
+@property (assign, nonatomic) Uniforms uniforms;
+@property (assign, nonatomic) Params params;
 @end
 
 @implementation ModelView
@@ -41,15 +48,51 @@
         
         //
         
+        id<MTLFunction> vertexFunction = [library newFunctionWithName:@"model_viewer::vertex_main"];
+        id<MTLFunction> fragmentFunction = [library newFunctionWithName:@"model_viewer::fragment_main"];
+        [library release];
         
+        //
+        
+        MTLRenderPipelineDescriptor *renderPipelineDescriptor = [MTLRenderPipelineDescriptor new];
+        renderPipelineDescriptor.vertexFunction = vertexFunction;
+        [vertexFunction release];
+        renderPipelineDescriptor.fragmentFunction = fragmentFunction;
+        [fragmentFunction release];
+        renderPipelineDescriptor.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
+        renderPipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIOWithError([self vertexDescriptor], &error);
+        assert(error == nil);
+        
+        id<MTLRenderPipelineState> renderpipelineState = [device newRenderPipelineStateWithDescriptor:renderPipelineDescriptor error:&error];
+        [renderPipelineDescriptor release];
+        assert(error == nil);
+        
+        //
+        
+        MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
+        depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
+        depthStencilDescriptor.depthWriteEnabled = YES;
+        
+        id<MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+        [depthStencilDescriptor release];
+        
+        //
+        
+        Model *groundModel = [[Model alloc] initWithType:ModelTypeGround device:device vertexDescriptor:[self vertexDescriptor]];
         
         //
         
         _device = [device retain];
         _commandQueue = [commandQueue retain];
+        _renderPipelineState = [renderpipelineState retain];
+        _depthStencilState = [depthStencilState retain];
+        _groundModel = [groundModel retain];
+        _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -4.f)));
         
-        [library release];
         [commandQueue release];
+        [renderpipelineState release];
+        [depthStencilState release];
+        [groundModel release];
     }
     
     return self;
@@ -59,7 +102,26 @@
     [_device release];
     [_commandQueue release];
     [_renderPipelineState release];
+    [_depthStencilState release];
+    [_groundModel release];
     [super dealloc];
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    CGSize size = self.bounds.size;
+    std::float_t aspect = size.width / size.height;
+    
+    _uniforms.projectionMatrix = MathLibrary::projectionFloat4x4(MathLibrary::radiansFromDegrees(70.f),
+                                                                 0.1f,
+                                                                 100.f,
+                                                                 aspect);
+    
+    _params.width = size.width;
+    _params.height = size.height;
+    
+    [self draw];
 }
 
 - (CAMetalLayer *)metalLayer {
@@ -99,7 +161,7 @@
     
     // UV는 Texture가 놓일 위치를 말한다.
     MDLVertexAttribute *uvVertexAttribute = [[MDLVertexAttribute alloc] initWithName:MDLVertexAttributeTextureCoordinate format:MDLVertexFormatFloat2 offset:offset bufferIndex:static_cast<NSUInteger>(Layout::UVBuffer)];
-    vertexDescriptor.attributes[static_cast<NSInteger>(Layout::UVBuffer)] = uvVertexAttribute;
+    vertexDescriptor.attributes[static_cast<NSInteger>(Attribute::UV)] = uvVertexAttribute;
     [uvVertexAttribute release];
     
     offset += sizeof(simd_float2);
@@ -111,6 +173,57 @@
     //
     
     return [vertexDescriptor autorelease];
+}
+
+- (void)draw {
+    CAMetalLayer *metalLayer = self.metalLayer;
+    
+    if (CGRectEqualToRect(metalLayer.frame, CGRectNull)) return;
+    if (CGRectEqualToRect(metalLayer.frame, CGRectZero)) return;
+    
+    metalLayer.drawableSize = metalLayer.bounds.size;
+    
+    id<CAMetalDrawable> _Nullable drawable = [metalLayer nextDrawable];
+    if (drawable == nil) return;
+    
+    MTLRenderPassColorAttachmentDescriptor *colorAttachmentDescriptor = [MTLRenderPassColorAttachmentDescriptor new];
+    colorAttachmentDescriptor.texture = [drawable texture];
+    colorAttachmentDescriptor.clearColor = MTLClearColorMake(0.f, 1.f, 1.f, 1.f);
+    colorAttachmentDescriptor.loadAction = MTLLoadActionClear;
+    colorAttachmentDescriptor.storeAction = MTLStoreActionStore;
+    
+    MTLRenderPassDescriptor *renderPassDescriptor = [MTLRenderPassDescriptor new];
+    renderPassDescriptor.colorAttachments[0] = colorAttachmentDescriptor;
+    [colorAttachmentDescriptor release];
+    renderPassDescriptor.renderTargetWidth = CGRectGetWidth(metalLayer.bounds);
+    renderPassDescriptor.renderTargetHeight = CGRectGetHeight(metalLayer.bounds);
+    
+    //
+    
+    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+    id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
+    [renderPassDescriptor release];
+    
+    [renderCommandEncoder setRenderPipelineState:_renderPipelineState];
+    [renderCommandEncoder setDepthStencilState:_depthStencilState];
+    
+    //
+    
+    _timer += 0.005f;
+    
+    //
+    
+    _groundModel->_scale = 40.f;
+    _groundModel->_rotation.z = MathLibrary::radiansFromDegrees(90.f);
+    _groundModel->_rotation.y = std::sin(_timer);
+    
+    [_groundModel renderInEncoder:renderCommandEncoder uniforms:_uniforms params:_params];
+    
+    //
+    
+    [renderCommandEncoder endEncoding];
+    [commandBuffer presentDrawable:drawable];
+    [commandBuffer commit];
 }
 
 @end

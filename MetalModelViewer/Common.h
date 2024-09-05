@@ -22,13 +22,25 @@ enum class Layout {
 };
 
 enum class BufferIndex {
-    UniformsBuffer = 11
+    VertexBuffer = 0,
+    UVBuffer = 1,
+    UniformsBuffer = 11,
+    ParamsBuffer = 12
 };
 
 typedef struct {
-    matrix_float4x4 modelMatrix;
-    matrix_float4x4 viewMatrix;
-    matrix_float4x4 projectionMatrix;
+    simd::float4x4 modelMatrix;
+    simd::float4x4 viewMatrix;
+    simd::float4x4 projectionMatrix;
 } Uniforms;
+
+typedef struct {
+    uint width, height;
+    uint tiling;
+} Params;
+
+enum class TextureIndices {
+    BaseColor = 0
+};
 
 #endif /* Common_h */
