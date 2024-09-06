@@ -23,7 +23,7 @@
 @property (assign, nonatomic) float timer;
 @property (assign, nonatomic) Uniforms uniforms;
 @property (assign, nonatomic) Params params;
-//@property (retain, nonatomic, readonly) UIUpdateLink *updateLink;
+@property (retain, nonatomic, readonly) UIUpdateLink *updateLink;
 @property (retain, nonatomic, readonly) NSMutableSet<Model *> *models;
 @property (nonatomic, readonly, nullable) Model *model;
 @end
@@ -86,11 +86,11 @@
         
         //
         
-//        UIUpdateLink *updateLink = [UIUpdateLink updateLinkForView:self actionTarget:self selector:@selector(didTriggerUpdateLink:)];
-//        updateLink.requiresContinuousUpdates = YES;
-//        updateLink.wantsLowLatencyEventDispatch = YES;
-//        updateLink.preferredFrameRateRange = CAFrameRateRangeMake(0.f, 30.f, 30.f);
-//        updateLink.enabled = YES;
+        UIUpdateLink *updateLink = [UIUpdateLink updateLinkForView:self actionTarget:self selector:@selector(didTriggerUpdateLink:)];
+        updateLink.requiresContinuousUpdates = YES;
+        updateLink.wantsLowLatencyEventDispatch = YES;
+        updateLink.preferredFrameRateRange = CAFrameRateRangeMake(0.f, 30.f, 30.f);
+        updateLink.enabled = YES;
         
         //
         
@@ -100,7 +100,7 @@
         _depthStencilState = [depthStencilState retain];
         _groundModel = [groundModel retain];
         _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -4.f)));
-//        _updateLink = [updateLink retain];
+        _updateLink = [updateLink retain];
         _models = [NSMutableSet new];
         
         [commandQueue release];
@@ -221,9 +221,9 @@
     return [vertexDescriptor autorelease];
 }
 
-//- (void)didTriggerUpdateLink:(UIUpdateLink *)sender {
-//    [self draw];
-//}
+- (void)didTriggerUpdateLink:(UIUpdateLink *)sender {
+    [self draw];
+}
 
 - (void)draw {
     CAMetalLayer *metalLayer = self.metalLayer;
@@ -271,12 +271,12 @@
     
     //
     
-//    _timer += 0.005f;
+    _timer += 0.005f;
 
     //
     
     Model *selectedModel = self.model;
-    selectedModel->_rotation.x = std::sin(_timer);
+    selectedModel->_rotation.y = std::sin(_timer);
     [selectedModel renderInEncoder:renderCommandEncoder uniforms:_uniforms params:_params];
     
     //

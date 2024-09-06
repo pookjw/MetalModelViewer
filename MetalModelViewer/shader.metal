@@ -35,7 +35,7 @@ namespace model_viewer {
         return out;
     }
     
-    [[early_fragment_tests]]
+    [[early_fragment_tests]] // 알파 블랜딩에서 문제될 수 있음
     fragment float4 fragment_main(VertexOut in [[stage_in]],
                                   constant Params &params [[buffer(static_cast<uint>(BufferIndex::ParamsBuffer))]],
                                   texture2d<float> baseColorTexture [[texture(static_cast<uint>(TextureIndices::BaseColor))]]) {
