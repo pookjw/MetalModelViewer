@@ -9,6 +9,36 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #include "MathLibrary.hpp"
 
+ModelType * allModelTypes(NSUInteger * _Nullable count) {
+    if (count != NULL) {
+        *count = 4;
+    }
+    
+    static ModelType modelTypes[4] = {
+        ModelTypeGround,
+        ModelTypeLowpolyHouse,
+        ModelTypePancakes,
+        ModelTypeTVRetro
+    };
+    
+    return modelTypes;
+}
+
+NSString * NSStringFromModelType(ModelType modelType) {
+    switch (modelType) {
+        case ModelTypeGround:
+            return @"Ground";
+        case ModelTypeLowpolyHouse:
+            return @"Lowpoly House";
+        case ModelTypePancakes:
+            return @"Pancakes";
+        case ModelTypeTVRetro:
+            return @"TV Retro";
+        default:
+            return nil;
+    }
+}
+
 @interface Model ()
 @property (retain, readonly, nonatomic) NSArray<MTKMesh *> *mtkMeshes;
 @property (retain, readonly, nonatomic) NSArray<MDLMesh *> *mdlMeshes;

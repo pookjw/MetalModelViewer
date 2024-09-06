@@ -99,7 +99,7 @@
         _renderPipelineState = [renderpipelineState retain];
         _depthStencilState = [depthStencilState retain];
         _groundModel = [groundModel retain];
-        _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -40.f)));
+        _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -4.f)));
         _updateLink = [updateLink retain];
         _models = [NSMutableSet new];
         
@@ -110,8 +110,8 @@
         
         //
         
-        self.modelType = ModelTypePancakes;
-//        self.modelType = ModelTypeLowpolyHouse;
+//        self.modelType = ModelTypePancakes;
+        self.modelType = ModelTypeLowpolyHouse;
     }
     
     return self;
@@ -271,7 +271,7 @@
     
     //
     
-    _timer += 0.005f;
+//    _timer += 0.005f;
 
     //
     

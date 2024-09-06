@@ -18,6 +18,9 @@ typedef NS_ENUM(NSUInteger, ModelType) {
     ModelTypeTVRetro
 };
 
+extern ModelType * allModelTypes(NSUInteger * _Nullable count);
+extern NSString * NSStringFromModelType(ModelType modelType);
+
 @interface Model : NSObject {
 @public simd::float3 _position;
 @public simd::float3 _rotation;
