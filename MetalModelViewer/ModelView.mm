@@ -64,7 +64,7 @@
         renderPipelineDescriptor.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
         renderPipelineDescriptor.vertexDescriptor = MTKMetalVertexDescriptorFromModelIOWithError([self vertexDescriptor], &error);
         assert(error == nil);
-//        renderPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+        renderPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
         
         id<MTLRenderPipelineState> renderpipelineState = [device newRenderPipelineStateWithDescriptor:renderPipelineDescriptor error:&error];
         [renderPipelineDescriptor release];
@@ -249,7 +249,16 @@
     renderPassDescriptor.renderTargetHeight = CGRectGetHeight(metalLayer.bounds);
     
     // TODO
-    NSLog(@"%@", renderPassDescriptor.depthAttachment);
+    CGSize drawableSize = metalLayer.drawableSize;
+    MTLTextureDescriptor *descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
+                                                                                          width:drawableSize.width
+                                                                                         height:drawableSize.height
+                                                                                      mipmapped:NO];
+    descriptor.usage = MTLTextureUsageRenderTarget;
+    descriptor.storageMode = MTLStorageModePrivate;
+    id<MTLTexture> depthTexture = [_device newTextureWithDescriptor:descriptor];
+    renderPassDescriptor.depthAttachment.texture = depthTexture;
+    [depthTexture release];
     
     //
     
