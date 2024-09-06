@@ -10,7 +10,6 @@
 #import <ModelIO/ModelIO.h>
 #import "Common.h"
 #include "MathLibrary.hpp"
-#import "Model.h"
 
 // early_fragment_tests 써보기
 
@@ -25,6 +24,8 @@
 @property (assign, nonatomic) Uniforms uniforms;
 @property (assign, nonatomic) Params params;
 @property (retain, nonatomic, readonly) UIUpdateLink *updateLink;
+@property (retain, nonatomic, readonly) NSMutableSet<Model *> *models;
+@property (nonatomic, readonly, nullable) Model *model;
 @end
 
 @implementation ModelView
@@ -98,13 +99,19 @@
         _renderPipelineState = [renderpipelineState retain];
         _depthStencilState = [depthStencilState retain];
         _groundModel = [groundModel retain];
-        _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -4.f)));
+        _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -40.f)));
         _updateLink = [updateLink retain];
+        _models = [NSMutableSet new];
         
         [commandQueue release];
         [renderpipelineState release];
         [depthStencilState release];
         [groundModel release];
+        
+        //
+        
+        self.modelType = ModelTypePancakes;
+//        self.modelType = ModelTypeLowpolyHouse;
     }
     
     return self;
@@ -116,6 +123,7 @@
     [_renderPipelineState release];
     [_depthStencilState release];
     [_groundModel release];
+    [_models release];
     [super dealloc];
 }
 
@@ -138,6 +146,32 @@
 
 - (CAMetalLayer *)metalLayer {
     return static_cast<CAMetalLayer *>(self.layer);
+}
+
+- (void)setModelType:(ModelType)modelType {
+    _modelType = modelType;
+    
+    //
+    
+    for (Model *model in self.models) {
+        if (model.type == self.modelType) {
+            return;
+        }
+    }
+    
+    Model *model = [[Model alloc] initWithType:modelType device:_device vertexDescriptor:[self vertexDescriptor]];
+    [self.models addObject:model];
+    [model release];
+}
+
+- (Model *)model {
+    for (Model *model in self.models) {
+        if (model.type == self.modelType) {
+            return model;
+        }
+    }
+    
+    return nil;
 }
 
 - (MDLVertexDescriptor *)vertexDescriptor {
@@ -203,8 +237,8 @@
     if (drawable == nil) return;
     
     MTLRenderPassColorAttachmentDescriptor *colorAttachmentDescriptor = [MTLRenderPassColorAttachmentDescriptor new];
-    colorAttachmentDescriptor.texture = [drawable texture];
-    colorAttachmentDescriptor.clearColor = MTLClearColorMake(0.f, 1.f, 0.f, 1.f);
+    colorAttachmentDescriptor.texture = drawable.texture;
+    colorAttachmentDescriptor.clearColor = MTLClearColorMake(1.f, 1.f, 0.8f, 1.f);
     colorAttachmentDescriptor.loadAction = MTLLoadActionClear;
     colorAttachmentDescriptor.storeAction = MTLStoreActionStore;
     
@@ -214,6 +248,9 @@
     renderPassDescriptor.renderTargetWidth = CGRectGetWidth(metalLayer.bounds);
     renderPassDescriptor.renderTargetHeight = CGRectGetHeight(metalLayer.bounds);
     
+    // TODO
+    NSLog(@"%@", renderPassDescriptor.depthAttachment);
+    
     //
     
     id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
@@ -221,20 +258,25 @@
     [renderPassDescriptor release];
     
     [renderCommandEncoder setRenderPipelineState:_renderPipelineState];
-//    [renderCommandEncoder setDepthStencilState:_depthStencilState];
+    [renderCommandEncoder setDepthStencilState:_depthStencilState];
     
     //
     
     _timer += 0.005f;
-    _uniforms.viewMatrix = simd::inverse(MathLibrary::float4x4FromFloat3Translation(simd::make_float3(0.f, 1.f, -4.f)));
-//
-//    //
-//
+
+    //
+    
+    Model *selectedModel = self.model;
+    selectedModel->_rotation.x = std::sin(_timer);
+    [selectedModel renderInEncoder:renderCommandEncoder uniforms:_uniforms params:_params];
+    
+    //
+    
     _groundModel->_scale = 40.f;
     _groundModel->_rotation.z = MathLibrary::radiansFromDegrees(90.f);
     _groundModel->_rotation.y = std::sin(_timer);
     
-    [_groundModel renderInEncoder:renderCommandEncoder uniforms:_uniforms params:_params];
+//    [_groundModel renderInEncoder:renderCommandEncoder uniforms:_uniforms params:_params];
     
     //
     

@@ -23,7 +23,7 @@ typedef NS_ENUM(NSUInteger, ModelType) {
 @public simd::float3 _rotation;
 @public float _scale;
 }
-@property (assign, nonatomic) ModelType type;
+@property (assign, nonatomic, readonly) ModelType type;
 @property (assign, nonatomic) uint tiling;
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;

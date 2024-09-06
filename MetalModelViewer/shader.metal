@@ -36,16 +36,16 @@ namespace model_viewer {
     }
     
     fragment float4 fragment_main(VertexOut in [[stage_in]],
-                                  constant Params &params [[buffer(static_cast<uint>(BufferIndex::ParamsBuffer))]]
-                                  /*texture2d<float> baseColorTexture [[texture(static_cast<uint>(TextureIndices::BaseColor))]]*/) {
-//        constexpr sampler textureSampler(filter::nearest,
-//                                         address::mirrored_repeat,
-//                                         mip_filter::nearest,
-//                                         max_anisotropy(8));
-//        
-//        float3 baseColor = baseColorTexture.sample(textureSampler, in.uv * params.tiling).rgb;
-//        
-//        return float4(baseColor, 1.f);
-        return float4(1.f, 0.f, 0.f, 1.f);
+                                  constant Params &params [[buffer(static_cast<uint>(BufferIndex::ParamsBuffer))]],
+                                  texture2d<float> baseColorTexture [[texture(static_cast<uint>(TextureIndices::BaseColor))]]) {
+        constexpr sampler textureSampler(filter::nearest,
+                                         address::mirrored_repeat,
+                                         mip_filter::nearest,
+                                         max_anisotropy(8));
+        
+        float3 baseColor = baseColorTexture.sample(textureSampler, in.uv * params.tiling).rgb;
+        
+        return float4(baseColor, 1.f);
+//        return float4(0.f, 1.f, 1.f, 1.f);
     }
 }
